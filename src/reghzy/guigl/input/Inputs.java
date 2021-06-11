@@ -4,18 +4,18 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
+import reghzy.guigl.core.controls.Window;
 import reghzy.guigl.input.listener.KeyListener;
 import reghzy.guigl.input.listener.MouseListener;
-import reghzy.guigl.utils.Point;
-import reghzy.guigl.window.Window;
+import reghzy.guigl.maths.Vector2;
 
 import java.nio.DoubleBuffer;
 import java.util.ArrayList;
 
 public class Inputs {
-    private final Window window;
     private static Inputs instance;
-
+    
+    public final Window window;
     public final Mouse mouse;
     public final Keyboard keyboard;
 
@@ -26,8 +26,8 @@ public class Inputs {
     }
 
     public void registerEvents() {
-        GLFW.glfwSetKeyCallback(this.window.getWindowId(), this.keyboard.keyCallback);
-        GLFW.glfwSetMouseButtonCallback(this.window.getWindowId(), this.mouse.mouseButtonCallback);
+        GLFW.glfwSetKeyCallback(this.window.getHandle(), this.keyboard.keyCallback);
+        GLFW.glfwSetMouseButtonCallback(this.window.getHandle(), this.mouse.mouseButtonCallback);
     }
 
     public void update() {
@@ -57,16 +57,16 @@ public class Inputs {
         private final ArrayList<MouseListener> listeners;
         private final boolean[] mouseButtonsDown;
 
-        public final Point cursorCurrent;
-        public final Point cursorPrevious;
-        public final Point cursorChange;
+        public final Vector2 cursorCurrent;
+        public final Vector2 cursorPrevious;
+        public final Vector2 cursorChange;
         private final DoubleBuffer mouseBufferX;
         private final DoubleBuffer mouseBufferY;
 
         private Mouse() {
-            this.cursorCurrent = new Point();
-            this.cursorPrevious = new Point();
-            this.cursorChange = new Point();
+            this.cursorCurrent = new Vector2();
+            this.cursorPrevious = new Vector2();
+            this.cursorChange = new Vector2();
             this.mouseBufferX = BufferUtils.createDoubleBuffer(1);
             this.mouseBufferY = BufferUtils.createDoubleBuffer(1);
             this.listeners = new ArrayList<>(256);
@@ -113,10 +113,10 @@ public class Inputs {
         }
 
         private void update() {
-            GLFW.glfwGetCursorPos(Inputs.this.window.getWindowId(), this.mouseBufferX, this.mouseBufferY);
+            GLFW.glfwGetCursorPos(Inputs.this.window.getHandle(), this.mouseBufferX, this.mouseBufferY);
             this.cursorPrevious.set(this.cursorCurrent);
-            this.cursorCurrent.set((float) this.mouseBufferX.get(0), (float) this.mouseBufferX.get(0));
-            this.cursorChange.set(this.cursorCurrent.getX() - this.cursorChange.getX(), this.cursorCurrent.getY() - this.cursorChange.getY());
+            this.cursorCurrent.set((float) this.mouseBufferX.get(0), (float) this.mouseBufferY.get(0));
+            this.cursorChange.set(this.cursorCurrent.x - this.cursorChange.x, this.cursorCurrent.y - this.cursorChange.y);
         }
 
 

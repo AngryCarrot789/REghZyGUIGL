@@ -22,6 +22,12 @@ public class Vector2 {
         return this;
     }
 
+    public Vector2 set(Vector2 vector2) {
+        this.x = vector2.x;
+        this.y = vector2.y;
+        return this;
+    }
+
     public Vector2 multiply(Vector2 v) {
         return multiply(v.x, v.y);
     }
@@ -95,8 +101,11 @@ public class Vector2 {
         return x >= -1.0f && x <= 1.0f && y >= -1.0f && y <= 1.0f;
     }
 
-    @Override
-    protected Object clone() {
+    public boolean isEmpty() {
+        return this.x == 0 && this.y == 0;
+    }
+
+    public Vector2 copy() {
         return new Vector2(this.x, this.y);
     }
 

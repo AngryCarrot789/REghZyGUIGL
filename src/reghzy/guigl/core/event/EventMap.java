@@ -28,6 +28,10 @@ public class EventMap {
         }
     }
 
+    public <E extends Event> boolean hasListeners(Class<E> eventClass) {
+        return listeners.get(eventClass) != null;
+    }
+
     public <E extends Event> void addListener(Class<E> eventClass, EventHandler<E> handler) {
         getHandlers(eventClass).add(handler);
     }

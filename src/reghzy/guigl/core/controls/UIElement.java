@@ -2,11 +2,14 @@ package reghzy.guigl.core.controls;
 
 import reghzy.guigl.Application;
 import reghzy.guigl.core.event.EventMap;
-import reghzy.guigl.core.utils.HorizontalAlignment;
-import reghzy.guigl.core.utils.Thickness;
-import reghzy.guigl.core.utils.VerticalAlignment;
+import reghzy.guigl.core.event.control.IsEnabledChangedEvent;
+import reghzy.guigl.core.event.control.MarginChangedEvent;
+import reghzy.guigl.core.event.input.MouseEnterEvent;
+import reghzy.guigl.core.event.input.MouseLeaveEvent;
+import reghzy.guigl.core.event.input.MouseMoveEvent;
+import reghzy.guigl.core.utils.*;
+import reghzy.guigl.input.Inputs;
 import reghzy.guigl.maths.Vector2;
-import reghzy.guigl.window.Window;
 
 /**
  * A UI Element is the base class for all visual elements. they have a position
@@ -33,15 +36,15 @@ public class UIElement {
     /**
      * The margin of this UIElement relative to its parent, aka the offset from each side (margin.left = 5 means its moved 5 pixels right)
      */
-    protected final Thickness margin;
+    protected Thickness margin;
 
     /**
-     * The position of this UIElement. this should never really be manually edited, you should instead use the margin
+     * The position of this UIElement. this should never really be externally edited, you should instead use the margin and alignment
      * <p>
-     *     This is used directly when rendering, so
+     *     This is used directly when rendering, hence why editing it could be dangerous and is unexpected
      * </p>
      */
-    protected final Vector2 position;
+    protected Vector2 position;
 
     /**
      * The target size (width, height) of this element
@@ -52,6 +55,10 @@ public class UIElement {
      * The actual size (width, height) of this element
      */
     protected Vector2 actualSize;
+
+    protected Collider collider;
+
+    protected boolean isMouseOver;
 
     /**
      * The map that contains all event handlers for this UIElement
@@ -74,11 +81,20 @@ public class UIElement {
         this.targetSize = new Vector2();
         this.actualSize = new Vector2();
         this.eventMap = new EventMap();
+        this.collider = new ColliderAABB();
         this.isEnabled = true;
     }
 
     public Thickness getMargin() {
         return margin;
+    }
+
+    public void setMargin(Thickness margin) {
+        Thickness before = this.margin;
+        this.margin = margin;
+        if (this.eventMap.hasListeners(MarginChangedEvent.class)) {
+            this.eventMap.sendEvent(new MarginChangedEvent(this, before));
+        }
     }
 
     public HorizontalAlignment getHorizontalAlignment() {
@@ -141,6 +157,11 @@ public class UIElement {
     }
 
     public void update() {
+        updateSizeAndPosition();
+        updateMouse();
+    }
+
+    public void updateSizeAndPosition() {
         switch (this.horizontalAlignment) {
             case left: {
                 if (this.parent == null) {
@@ -157,7 +178,7 @@ public class UIElement {
                 if (this.parent == null) {
                     Window window = Application.getApplication().window;
                     startX = 0;
-                    endX = (float) window.getWidth();
+                    endX = window.getWidth();
                 }
                 else {
                     startX = this.parent.getAbsoluteX();
@@ -171,7 +192,7 @@ public class UIElement {
                 float endX;
                 if (this.parent == null) {
                     Window window = Application.getApplication().window;
-                    endX = (float) window.getWidth();
+                    endX = window.getWidth();
                 }
                 else {
                     endX = (this.parent.getAbsoluteX() + this.parent.actualSize.x);
@@ -185,7 +206,7 @@ public class UIElement {
                 float endX;
                 if (this.parent == null) {
                     Window window = Application.getApplication().window;
-                    endX = (float) window.getWidth();
+                    endX = window.getWidth();
                 }
                 else {
                     endX = (this.parent.getAbsoluteX() + this.parent.actualSize.x);
@@ -212,7 +233,7 @@ public class UIElement {
                 if (this.parent == null) {
                     Window window = Application.getApplication().window;
                     startY = 0;
-                    endY = (float) window.getHeight();
+                    endY = window.getHeight();
                 }
                 else {
                     startY = this.parent.getAbsoluteY();
@@ -226,7 +247,7 @@ public class UIElement {
                 float endY;
                 if (this.parent == null) {
                     Window window = Application.getApplication().window;
-                    endY = (float) window.getHeight();
+                    endY = window.getHeight();
                 }
                 else {
                     endY = (this.parent.getAbsoluteY() + this.parent.actualSize.y);
@@ -240,7 +261,7 @@ public class UIElement {
                 float endY;
                 if (this.parent == null) {
                     Window window = Application.getApplication().window;
-                    endY = (float) window.getHeight();
+                    endY = window.getHeight();
                 }
                 else {
                     endY = (this.parent.getAbsoluteY() + this.parent.actualSize.y);
@@ -249,6 +270,53 @@ public class UIElement {
                 this.actualSize.y = (endY - this.margin.bottom) - this.position.y;
             }
             break;
+        }
+
+        updateCollider();
+        updateMouse();
+    }
+
+    public void updateCollider() {
+        ColliderAABB aabb = (ColliderAABB) this.collider;
+        aabb.setMin(getAbsoluteX(), getAbsoluteY());
+        aabb.setMax(aabb.minX + this.actualSize.x, aabb.minY + this.actualSize.y);
+    }
+
+    public void updateMouse() {
+        if (this.collider.intersectsPoint(Inputs.getInstance().mouse.cursorCurrent)) {
+            if (this.isMouseOver) {
+                if (!Inputs.getInstance().mouse.cursorChange.isEmpty()) {
+                    onMouseMove();
+                }
+            }
+            else {
+                onMouseEnter();
+                this.isMouseOver = true;
+            }
+        }
+        else {
+            if (this.isMouseOver) {
+                onMouseLeave();
+                this.isMouseOver = false;
+            }
+        }
+    }
+
+    public void onMouseEnter() {
+        if (this.eventMap.hasListeners(MouseEnterEvent.class)) {
+            this.eventMap.sendEvent(new MouseEnterEvent(this));
+        }
+    }
+
+    public void onMouseLeave() {
+        if (this.eventMap.hasListeners(MouseLeaveEvent.class)) {
+            this.eventMap.sendEvent(new MouseLeaveEvent(this));
+        }
+    }
+
+    public void onMouseMove() {
+        if (this.eventMap.hasListeners(MouseMoveEvent.class)) {
+            this.eventMap.sendEvent(new MouseMoveEvent(this));
         }
     }
 
@@ -261,6 +329,10 @@ public class UIElement {
     }
 
     public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
+        boolean before = this.isEnabled;
+        this.isEnabled = enabled;
+        if (this.eventMap.hasListeners(IsEnabledChangedEvent.class)) {
+            this.eventMap.sendEvent(new IsEnabledChangedEvent(this, before));
+        }
     }
 }

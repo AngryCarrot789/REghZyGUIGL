@@ -1,8 +1,8 @@
 package reghzy.guigl.core.render;
 
 import org.lwjgl.opengl.GL11;
+import reghzy.guigl.core.controls.Window;
 import reghzy.guigl.core.style.Colour;
-import reghzy.guigl.window.Window;
 import sun.plugin.dom.exception.InvalidStateException;
 
 public class Tesselator {
@@ -41,7 +41,7 @@ public class Tesselator {
 
 
     public void setActiveColour(float r, float g, float b) {
-        GL11.glColor4f(r, g, b, 1.0f);
+        GL11.glColor3f(r, g, b);
     }
 
 
@@ -74,14 +74,12 @@ public class Tesselator {
         GL11.glLineWidth(thickness);
     }
 
-
     public void drawRectangleOutline(float x1, float y1, float x2, float y2) {
         preDraw();
-        float ndcX1 = CoordinateHelper.screenToNdcX(x1, (float) this.window.getWidth());
-        float ndcY1 = CoordinateHelper.screenToNdcY(y1, (float) this.window.getHeight());
-        float ndcX2 = CoordinateHelper.screenToNdcX(x2, (float) (this.window.getDesktopX() + this.window.getWidth()));
-        float ndcY2 = CoordinateHelper.screenToNdcY(y2, (float) (this.window.getDesktopY() + this.window.getHeight()));
-
+        float ndcX1 = CoordinateHelper.screenToNdcX(x1, this.window.getWidth());
+        float ndcY1 = CoordinateHelper.screenToNdcY(y1, this.window.getHeight());
+        float ndcX2 = CoordinateHelper.screenToNdcX(x2, this.window.getDesktopX() + this.window.getWidth());
+        float ndcY2 = CoordinateHelper.screenToNdcY(y2, this.window.getDesktopY() + this.window.getHeight());
         GL11.glBegin(GL11.GL_QUADS);
         GL11.glVertex3f(ndcX1, ndcY1, 0);
         GL11.glVertex3f(ndcX2, ndcY1, 0);
@@ -94,12 +92,10 @@ public class Tesselator {
 
     public void drawRectangleFill(float x1, float y1, float x2, float y2) {
         preDraw();
-        float ndcX1 = CoordinateHelper.screenToNdcX(x1, (float) this.window.getWidth());
-        float ndcY1 = CoordinateHelper.screenToNdcY(y1, (float) this.window.getHeight());
-        float ndcX2 = CoordinateHelper.screenToNdcX(x2, (float) this.window.getWidth());
-        float ndcY2 = CoordinateHelper.screenToNdcY(y2, (float) this.window.getHeight());
-
-        GL11.glColor3f(0.2f, 0.3f, 0.8f);
+        float ndcX1 = CoordinateHelper.screenToNdcX(x1, this.window.getWidth());
+        float ndcY1 = CoordinateHelper.screenToNdcY(y1, this.window.getHeight());
+        float ndcX2 = CoordinateHelper.screenToNdcX(x2, this.window.getWidth());
+        float ndcY2 = CoordinateHelper.screenToNdcY(y2, this.window.getHeight());
         GL11.glBegin(GL11.GL_TRIANGLES);
         {
             GL11.glVertex3f(ndcX2, ndcY2, 0);
@@ -107,26 +103,27 @@ public class Tesselator {
             GL11.glVertex3f(ndcX1, ndcY1, 0);
         }
         GL11.glEnd();
-         GL11.glBegin(GL11.GL_TRIANGLES);
-         {
-             GL11.glVertex3f(ndcX1, ndcY1, 0);
-             GL11.glVertex3f(ndcX1, ndcY2, 0);
-             GL11.glVertex3f(ndcX2, ndcY2, 0);
-         }
+        GL11.glBegin(GL11.GL_TRIANGLES);
+        {
+            GL11.glVertex3f(ndcX1, ndcY1, 0);
+            GL11.glVertex3f(ndcX1, ndcY2, 0);
+            GL11.glVertex3f(ndcX2, ndcY2, 0);
+        }
         GL11.glEnd();
         postDraw();
     }
 
 
     public void drawLine(float x1, float y1, float x2, float y2) {
-        float ndcX1 = CoordinateHelper.screenToNdcX(x1, (float) this.window.getWidth());
-        float ndcY1 = CoordinateHelper.screenToNdcY(y1, (float) this.window.getHeight());
-        float ndcX2 = CoordinateHelper.screenToNdcX(x2, (float) (this.window.getDesktopX() + this.window.getWidth()));
-        float ndcY2 = CoordinateHelper.screenToNdcY(y2, (float) (this.window.getDesktopY() + this.window.getHeight()));
-
+        preDraw();
+        float ndcX1 = CoordinateHelper.screenToNdcX(x1, this.window.getWidth());
+        float ndcY1 = CoordinateHelper.screenToNdcY(y1, this.window.getHeight());
+        float ndcX2 = CoordinateHelper.screenToNdcX(x2, this.window.getDesktopX() + this.window.getWidth());
+        float ndcY2 = CoordinateHelper.screenToNdcY(y2, this.window.getDesktopY() + this.window.getHeight());
         GL11.glBegin(GL11.GL_LINE_LOOP);
         GL11.glVertex3f(ndcX1, ndcY1, 0);
         GL11.glVertex3f(ndcX2, ndcY2, 0);
         GL11.glEnd();
+        postDraw();
     }
 }

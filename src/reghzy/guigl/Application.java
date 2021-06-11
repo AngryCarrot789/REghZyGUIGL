@@ -1,16 +1,14 @@
 package reghzy.guigl;
 
-import com.sun.corba.se.impl.protocol.giopmsgheaders.FragmentMessage;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
-import org.w3c.dom.css.Rect;
 import reghzy.guigl.core.controls.FrameworkElement;
-import reghzy.guigl.core.controls.primitive.Rectangle;
+import reghzy.guigl.core.controls.Window;
+import reghzy.guigl.core.controls.primitive.Border;
 import reghzy.guigl.core.render.RenderManager;
 import reghzy.guigl.core.render.Tesselator;
 import reghzy.guigl.core.utils.HorizontalAlignment;
 import reghzy.guigl.core.utils.VerticalAlignment;
-import reghzy.guigl.window.Window;
 
 import java.util.ArrayList;
 
@@ -50,14 +48,14 @@ public class Application {
 
     private boolean init() {
         window = new Window("Main Window", 1280, 720, 100, 100);
-        window.showWindow();
+        window.glfwShow();
         this.tesselator = new Tesselator(this.window);
-        GL11.glClearColor(0.2f, 0.8f, 0.6f, 1.0f);
-        GL11.glEnable(GL11.GL_CULL_FACE);
-        GL11.glCullFace(GL11.GL_BACK);
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-        GL11.glDepthFunc(GL11.GL_LESS);
-        GL11.glDepthMask(true);
+        // GL11.glClearColor(0.2f, 0.8f, 0.6f, 1.0f);
+        // GL11.glEnable(GL11.GL_CULL_FACE);
+        // GL11.glCullFace(GL11.GL_BACK);
+        // GL11.glEnable(GL11.GL_DEPTH_TEST);
+        // GL11.glDepthFunc(GL11.GL_LESS);
+        // GL11.glDepthMask(true);
         return true;
     }
 
@@ -71,18 +69,18 @@ public class Application {
         if (!init())
             return;
 
-        Rectangle rectangle = new Rectangle();
-        rectangle.getActualSize().set(200, 120);
-        rectangle.getMargin().set(5);
-        rectangle.setVerticalAlignment(VerticalAlignment.bottom);
-        rectangle.setHorizontalAlignment(HorizontalAlignment.right);
-        this.elements.add(rectangle);
+        Border border = new Border();
+        border.getActualSize().set(200, 120);
+        border.getMargin().set(5);
+        border.setVerticalAlignment(VerticalAlignment.bottom);
+        border.setHorizontalAlignment(HorizontalAlignment.right);
+        this.elements.add(border);
 
         while(true) {
             GLFW.glfwPollEvents();
 
-            if (window.shouldClose()) {
-                window.closeWindow();
+            if (window.glfwShouldClose()) {
+                window.glfwClose();
                 stop();
                 break;
             }
@@ -112,7 +110,7 @@ public class Application {
     }
 
     private void update() {
-        window.getInput().updateMouse();
+        window.inputs.update();
 
         ArrayList<FrameworkElement> elements = this.elements;
         for (int i = 0, size = elements.size(); i < size; i++) {
@@ -121,7 +119,7 @@ public class Application {
     }
 
     private void render() {
-        window.useViewport();
+        window.glUseViewport();
         Tesselator.instance.clearBackground();
         Tesselator.instance.clearBackgroundColour(0.1f, 0.1f, 0.1f);
 
@@ -129,7 +127,7 @@ public class Application {
             this.renderManager.renderElement(elements.get(i));
         }
 
-        window.swapBuffers();
+        window.glfwSwapBuffers();
     }
 
     public boolean isRunning() {
@@ -146,5 +144,9 @@ public class Application {
 
     public RenderManager getRenderManager() {
         return renderManager;
+    }
+
+    public String getName() {
+        return name;
     }
 }

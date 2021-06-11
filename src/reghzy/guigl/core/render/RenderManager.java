@@ -1,8 +1,8 @@
 package reghzy.guigl.core.render;
 
 import reghzy.guigl.core.controls.FrameworkElement;
-import reghzy.guigl.core.controls.primitive.Rectangle;
-import reghzy.guigl.core.render.controls.RectangleRenderer;
+import reghzy.guigl.core.controls.primitive.Border;
+import reghzy.guigl.core.render.controls.BorderRenderer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class RenderManager {
             throw new RuntimeException("Cannot re-register primitive element renderers!");
         }
 
-        registerRenderer(Rectangle.class, new RectangleRenderer());
+        registerRenderer(Border.class, new BorderRenderer());
 
         this.isRegistered = true;
     }
